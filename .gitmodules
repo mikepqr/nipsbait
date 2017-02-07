@@ -1,0 +1,6 @@
+[submodule "clickbait-detector"]
+	path = clickbait-detector
+	url = git@github.com:saurabhmathur96/clickbait-detector.git
+[submodule "nips.json"]
+	path = nips.json
+	url = git@github.com:williamsmj/nips.json.git
