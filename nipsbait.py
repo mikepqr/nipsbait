@@ -19,31 +19,38 @@ model_path = "clickbait-detector/models/detector.h5"
 model = load_model(model_path)
 
 
-def words_to_indices(words):
-    return [invvocab.get(word, invvocab[UNK]) for word in words]
-
-
-def clean(text):
+def text_to_indices(text):
     text = text.replace(':', '')
     for punctuation in string.punctuation:
         text = text.replace(punctuation, " " + punctuation + " ")
     for i in range(10):
         text = text.replace(str(i), " " + str(i) + " ")
     text = MATCH_MULTIPLE_SPACES.sub(" ", text)
-    return text
+    return [invvocab.get(word, invvocab[UNK]) for word in text.lower().split()]
 
 
 def predict(headlines):
-    headlines = [clean(headline).lower().split() for headline in headlines]
-    iheadlines = [words_to_indices(headline) for headline in headlines]
+    iheadlines = texts_to_indices(headlines)
     inputs = sequence.pad_sequences(iheadlines, maxlen=SEQUENCE_LENGTH)
     clickbaitiness = model.predict(inputs)[:, 0]
     return clickbaitiness
 
 
+def fracunks(texts):
+    iunk = invvocab[UNK]
+    nunks = [inds.count(iunk) for inds in texts_to_indices(texts)]
+    ntokens = [len(inds) for inds in texts_to_indices(texts)]
+    return [a/b for a, b in zip(nunks, ntokens)]
+
+
+def texts_to_indices(texts):
+    return [text_to_indices(text) for text in texts]
+
+
 def nipsbait():
     nips = pd.read_json('nips.json/nips.json')
     nips['clickbaitiness'] = predict(nips['title'])
+    nips['fracunks'] = fracunks(nips['title'])
     return nips
 
 
