@@ -40,7 +40,7 @@ def fracunks(texts):
     iunk = invvocab[UNK]
     nunks = [inds.count(iunk) for inds in texts_to_indices(texts)]
     ntokens = [len(inds) for inds in texts_to_indices(texts)]
-    return [a/b for a, b in zip(nunks, ntokens)]
+    return nunks, ntokens, [a/b for a, b in zip(nunks, ntokens)]
 
 
 def texts_to_indices(texts):
@@ -50,13 +50,12 @@ def texts_to_indices(texts):
 def nipsbait():
     nips = pd.read_json('nips.json/nips.json')
     nips['clickbaitiness'] = predict(nips['title'])
-    nips['fracunks'] = fracunks(nips['title'])
+    nips['nunks'], nips['ntokens'], nips['fracunks'] = fracunks(nips['title'])
     return nips
 
 
-def plot_nipsbait():
-    nips = nipsbait()
+def plot_nipsbait(df):
     fig, ax = plt.subplots()
-    ax = nips['clickbaitiness'].groupby(nips['year']).mean().plot()
+    ax = df['clickbaitiness'].groupby(df['year']).mean().plot()
     ax.legend()
     fig.savefig("nipsbait.png", bbox_inches='tight')
