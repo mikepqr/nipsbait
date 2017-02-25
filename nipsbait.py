@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 from keras.models import load_model
 from keras.preprocessing import sequence
+import numpy as np
 import string
 import re
 
@@ -32,8 +33,8 @@ def text_to_indices(text):
 def predict(headlines):
     iheadlines = texts_to_indices(headlines)
     inputs = sequence.pad_sequences(iheadlines, maxlen=SEQUENCE_LENGTH)
-    clickbaitiness = model.predict(inputs)[:, 0]
-    return clickbaitiness
+    clickbaitiness = model.predict(inputs)
+    return np.hstack([clickbaitiness, 1 - clickbaitiness])
 
 
 def fracunks(texts):
@@ -49,7 +50,7 @@ def texts_to_indices(texts):
 
 def nipsbait():
     nips = pd.read_json('nips.json/nips.json')
-    nips['clickbaitiness'] = predict(nips['title'])
+    nips['clickbaitiness'] = predict(nips['title'])[:, 0]
     nips['nunks'], nips['ntokens'], nips['fracunks'] = fracunks(nips['title'])
     return nips
 
